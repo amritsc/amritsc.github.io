@@ -183,39 +183,19 @@ const QuickNavTabs = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 1.3 }}
-      className="flex flex-wrap justify-center gap-3 mb-12"
+      className="flex flex-wrap justify-center gap-4 md:gap-3 mb-12 px-4"
     >
       {tabs.map((tab, index) => (
         <motion.a
           key={tab.label}
           href={tab.href}
-          className="group relative flex items-center gap-2 px-5 py-2.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 rounded-full text-sm text-slate-300 transition-all duration-300 hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-slate-800/80"
-          whileHover={{ 
-            scale: 1.05, 
-            y: -3,
-            boxShadow: "0 10px 30px -10px rgba(6, 182, 212, 0.3), 0 0 20px rgba(6, 182, 212, 0.1)"
-          }}
-          whileTap={{ scale: 0.98 }}
+          className="group relative flex items-center gap-2 px-5 py-3 md:py-2.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 rounded-full text-sm text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.3 + index * 0.08, duration: 0.4 }}
         >
-          {/* Glow effect on hover */}
-          <motion.div 
-            className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          />
-          <span className="relative text-base group-hover:scale-110 transition-transform duration-300">{tab.icon}</span>
-          <span className="relative font-medium">{tab.label}</span>
-          {/* Subtle shine effect */}
-          <motion.div
-            className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
-            style={{
-              background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.1) 45%, transparent 50%)",
-            }}
-            initial={{ x: "-100%" }}
-            whileHover={{ x: "100%" }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-          />
+          <span className="text-base">{tab.icon}</span>
+          <span className="font-medium">{tab.label}</span>
         </motion.a>
       ))}
     </motion.div>
