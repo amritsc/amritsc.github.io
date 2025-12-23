@@ -612,11 +612,11 @@ const AgentsSection = () => {
             </div>
 
             <motion.div 
-              className="mt-4 text-[10px] sm:text-xs text-slate-500 text-center px-4"
+              className="mt-4 text-[9px] sm:text-xs text-slate-500 text-center px-2 whitespace-nowrap"
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              Alert → Classify → Summarize → Debug → Fix → Deploy
+              Alert→Classify→Summarize→Debug→Fix→Deploy
             </motion.div>
           </div>
         </motion.div>
