@@ -1,8 +1,59 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 
+// Hook to detect mobile devices
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return isMobile;
+};
+
 // Enhanced dynamic particle field with connections
 const ParticleField = () => {
+  const isMobile = useIsMobile();
+  
+  // MOBILE: Simple static dots, no animations
+  if (isMobile) {
+    const mobileParticles = Array.from({ length: 12 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 1,
+      opacity: Math.random() * 0.3 + 0.1,
+    }));
+    
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {mobileParticles.map((p) => (
+          <div
+            key={p.id}
+            className="absolute rounded-full"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              width: p.size,
+              height: p.size,
+              backgroundColor: p.id % 3 === 0 ? 'rgba(6, 182, 212, 0.5)' : 
+                              p.id % 3 === 1 ? 'rgba(59, 130, 246, 0.4)' : 
+                              'rgba(147, 51, 234, 0.3)',
+              opacity: p.opacity,
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+  
+  // DESKTOP: Full animated particles (unchanged)
   const particles = Array.from({ length: 60 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
@@ -77,28 +128,49 @@ const ParticleField = () => {
 };
 
 // Gradient orbs
-const GradientOrbs = () => (
-  <>
-    <motion.div
-      className="absolute top-1/4 -left-32 w-96 h-96 rounded-full opacity-30"
-      style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.4) 0%, transparent 70%)', filter: 'blur(60px)' }}
-      animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}
-      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-    />
-    <motion.div
-      className="absolute bottom-1/4 -right-32 w-80 h-80 rounded-full opacity-25"
-      style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)', filter: 'blur(50px)' }}
-      animate={{ x: [0, -25, 0], y: [0, 30, 0], scale: [1, 1.15, 1] }}
-      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-    />
-    <motion.div
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-10"
-      style={{ background: 'radial-gradient(circle, rgba(147,51,234,0.3) 0%, transparent 70%)', filter: 'blur(80px)' }}
-      animate={{ scale: [1, 1.2, 1] }}
-      transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-    />
-  </>
-);
+const GradientOrbs = () => {
+  const isMobile = useIsMobile();
+  
+  // MOBILE: Static, no blur (blur is very expensive on mobile)
+  if (isMobile) {
+    return (
+      <>
+        <div
+          className="absolute top-1/4 -left-32 w-64 h-64 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.4) 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute bottom-1/4 -right-32 w-56 h-56 rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)' }}
+        />
+      </>
+    );
+  }
+  
+  // DESKTOP: Full animated orbs with blur (unchanged)
+  return (
+    <>
+      <motion.div
+        className="absolute top-1/4 -left-32 w-96 h-96 rounded-full opacity-30"
+        style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.4) 0%, transparent 70%)', filter: 'blur(60px)' }}
+        animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-1/4 -right-32 w-80 h-80 rounded-full opacity-25"
+        style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)', filter: 'blur(50px)' }}
+        animate={{ x: [0, -25, 0], y: [0, 30, 0], scale: [1, 1.15, 1] }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-10"
+        style={{ background: 'radial-gradient(circle, rgba(147,51,234,0.3) 0%, transparent 70%)', filter: 'blur(80px)' }}
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </>
+  );
+};
 
 // Social links
 const SocialLinks = ({ size = "default", className = "" }) => {
