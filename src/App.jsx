@@ -914,6 +914,15 @@ const CertBadge = ({ provider, color }) => {
         </svg>
       </div>
     ),
+    Databricks: (
+      <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}20`, color: color }}>
+        <svg viewBox="0 0 100 100" className="w-9 h-9">
+          <path d="M50 15 L80 32 L50 49 L20 32 Z" fill={color} opacity="0.9"/>
+          <path d="M20 42 L50 59 L80 42 L80 52 L50 69 L20 52 Z" fill={color} opacity="0.7"/>
+          <path d="M20 59 L50 76 L80 59 L80 69 L50 86 L20 69 Z" fill={color} opacity="0.5"/>
+        </svg>
+      </div>
+    ),
   };
   return badges[provider];
 };
@@ -939,6 +948,7 @@ const CertificationsSection = () => {
       certs: [
         { name: "Microsoft Certified: Azure Fundamentals", code: "AZ-900", status: "completed" },
         { name: "Microsoft Certified: Azure AI Fundamentals", code: "AI-900", status: "completed" },
+        { name: "Microsoft Certified: Azure Data Fundamentals", code: "DP-900", status: "completed" },
         { name: "Microsoft Certified: Azure AI Engineer Associate", code: "AI-102", status: "completed" },
         { name: "Microsoft Certified: Azure Solutions Architect Expert", code: "AZ-305", status: "upcoming" },
       ],
@@ -949,6 +959,13 @@ const CertificationsSection = () => {
       certs: [
         { name: "Google Cloud Digital Leader", code: "CDL", status: "planned" },
         { name: "Google Associate Cloud Engineer", code: "ACE", status: "planned" },
+      ],
+    },
+    {
+      provider: "Databricks",
+      color: "#FF3621",
+      certs: [
+        { name: "Databricks Fundamentals", code: "DBF", status: "completed" },
       ],
     },
   ];
