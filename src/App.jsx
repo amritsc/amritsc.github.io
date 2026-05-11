@@ -291,7 +291,7 @@ const HeroSection = () => {
         <motion.div initial={{ opacity: 0, y: 20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6 }} className="mb-6">
           <span className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium tracking-widest text-cyan-400 border border-cyan-500/30 rounded-full bg-cyan-500/5 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            AI LEAD @ JPMORGAN CHASE
+            SR. CLOUD SOLUTIONS ARCHITECT @ MICROSOFT
           </span>
         </motion.div>
 
@@ -398,8 +398,8 @@ const AboutSection = () => {
 
         <div className="grid lg:grid-cols-5 gap-12 mt-12">
           <motion.div initial={{ opacity: 0, x: -40 }} animate={isInView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.6, delay: 0.2 }} className="lg:col-span-2 space-y-5 text-slate-300 leading-relaxed">
-            <p>I'm an AI/Cloud Architect at <span className="text-white font-medium">JPMorgan Chase</span> where I lead AI strategy, governance, and development for the CIB Technology Resiliency team. My work spans architecting multi-agent AI systems to driving firm-wide cloud adoption initiatives.</p>
-            <p>Before JPMC, I spent over two years at <span className="text-white font-medium">Amazon Web Services</span> as a Cloud Engineer, working with Fortune 500 companies to architect and optimize their serverless infrastructures—saving them over <span className="text-cyan-400 font-semibold">$500K annually</span>.</p>
+            <p>I'm a Senior Cloud Solutions Architect at <span className="text-white font-medium">Microsoft</span>, focused on Agentic AI, Copilot, and AI business solutions—helping enterprise customers turn AI ambition into production reality.</p>
+            <p>Previously, I led AI and Agentic AI strategy, enablement, development, and governance for the CIB Technology Resiliency team at <span className="text-white font-medium">JPMorgan Chase</span>, and spent over two years at <span className="text-white font-medium">Amazon Web Services</span> as a Cloud Engineer for Fortune 500 clients—saving them over <span className="text-cyan-400 font-semibold">$500K annually</span> in serverless infrastructure costs.</p>
             <p>I'm passionate about taking AI from proof-of-concept to production—building systems that don't just demo well, but scale reliably and deliver real business value.</p>
             <p className="text-slate-500 text-sm">B.S. Computer Science, Rutgers University — <span className="text-slate-400">magna cum laude</span></p>
           </motion.div>
@@ -769,6 +769,16 @@ const CompanyLogo = ({ company }) => {
         </svg>
       </div>
     ),
+    microsoft: (
+      <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
+        <svg viewBox="0 0 100 100" className="w-8 h-8">
+          <rect x="10" y="10" width="38" height="38" fill="#F25022"/>
+          <rect x="52" y="10" width="38" height="38" fill="#7FBA00"/>
+          <rect x="10" y="52" width="38" height="38" fill="#00A4EF"/>
+          <rect x="52" y="52" width="38" height="38" fill="#FFB900"/>
+        </svg>
+      </div>
+    ),
     prudential: (
       <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
         <svg viewBox="0 0 100 100" className="w-8 h-8">
@@ -788,10 +798,22 @@ const ExperienceSection = () => {
 
   const experiences = [
     {
+      company: "Microsoft",
+      logo: "microsoft",
+      role: "Senior Cloud Solutions Architect – Agentic AI & Copilot",
+      period: "May 2026 – Present",
+      location: "New York, NY · Remote",
+      highlights: [
+        "Architecting AI and Agentic AI solutions—including Copilot and Copilot Studio—for enterprise customers across the Microsoft Cloud ecosystem",
+        "Driving AI business solutions adoption, governance, and Center of Excellence initiatives",
+        "Coming soon ✨",
+      ],
+    },
+    {
       company: "JPMorgan Chase & Co.",
       logo: "jpmc",
       role: "AI Lead - CIB Technology Resiliency",
-      period: "October 2024 – Present",
+      period: "October 2024 – May 2026",
       location: "Jersey City, NJ",
       highlights: [
         "Leading AI strategy, governance, and enablement—developing frameworks and controls aligned with business goals",
@@ -950,6 +972,7 @@ const CertificationsSection = () => {
         { name: "Microsoft Certified: Azure AI Fundamentals", code: "AI-900", status: "completed" },
         { name: "Microsoft Certified: Azure Data Fundamentals", code: "DP-900", status: "completed" },
         { name: "Microsoft Certified: Azure AI Engineer Associate", code: "AI-102", status: "completed" },
+        { name: "Microsoft 365 Certified: Copilot and Agent Administration Fundamentals", code: "AB-900", status: "upcoming" },
         { name: "Microsoft Certified: Azure Solutions Architect Expert", code: "AZ-305", status: "upcoming" },
       ],
     },
