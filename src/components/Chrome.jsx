@@ -1,27 +1,36 @@
 import { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { person } from '../data';
+import { Magnetic } from './fx';
 
 const links = [
+  { href: '#about', label: 'About' },
   { href: '#agents', label: 'Agents' },
   { href: '#experience', label: 'Experience' },
-  { href: '#certifications', label: 'Certifications' },
+  { href: '#certifications', label: 'Certs' },
   { href: '#builds', label: 'Builds' },
 ];
 
-export function Nav() {
+export function Nav({ ready }) {
   const [scrolled, setScrolled] = useState(false);
+  const reduce = useReducedMotion();
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 24);
+    const on = () => setScrolled(window.scrollY > 40);
     on();
     window.addEventListener('scroll', on, { passive: true });
     return () => window.removeEventListener('scroll', on);
   }, []);
 
   return (
-    <header className={`nav ${scrolled ? 'is-scrolled' : ''}`}>
-      <div className="wrap nav__inner">
-        <a className="nav__brand" href="#top">
-          Amrit Chauhan
+    <motion.header
+      className={`nav ${scrolled ? 'is-scrolled' : ''}`}
+      initial={reduce ? false : { y: -80, opacity: 0 }}
+      animate={ready ? { y: 0, opacity: 1 } : undefined}
+      transition={{ duration: 0.9, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="nav__pill">
+        <a className="nav__brand" href="#top" aria-label="Back to top">
+          Amrit<span>.</span>
         </a>
         <nav aria-label="Sections">
           <ul className="nav__links">
@@ -33,40 +42,52 @@ export function Nav() {
           </ul>
         </nav>
         <a className="nav__cta" href="#contact">
-          Contact
+          Let’s talk
         </a>
       </div>
-    </header>
+    </motion.header>
   );
 }
 
 export function Contact() {
+  const line1 = "Let's build";
+  const line2 = "what's next.";
   return (
-    <section className="contact chapter chapter--ink" id="contact" aria-labelledby="contact-title">
-      <div className="wrap">
+    <section className="contact" id="contact" aria-labelledby="contact-title" data-scene="4">
+      <div className="wrap contact__inner">
         <h2 className="contact__title" id="contact-title">
-          Building with agents? Let’s talk.
+          <span className="contact__line">{line1}</span>
+          <span className="contact__line contact__line--b">{line2}</span>
         </h2>
-        <a className="contact__email" href={`mailto:${person.email}`}>
-          {person.email}
-        </a>
-        <ul className="contact__links">
-          <li>
-            <a href={person.linkedin} target="_blank" rel="noreferrer">
-              LinkedIn
+        <div className="contact__row">
+          <Magnetic strength={0.5}>
+            <a className="contact__orb" href={`mailto:${person.email}`} data-cursor="Email">
+              <span>Say hello</span>
             </a>
-          </li>
-          <li>
-            <a href={person.github} target="_blank" rel="noreferrer">
-              GitHub
+          </Magnetic>
+          <div className="contact__details">
+            <a className="contact__email" href={`mailto:${person.email}`}>
+              {person.email}
             </a>
-          </li>
-        </ul>
-        <footer className="footer">
-          <p>© {new Date().getFullYear()} Amrit Chauhan</p>
-          <p>Designed and built with React and Framer Motion</p>
-        </footer>
+            <ul className="contact__links">
+              <li>
+                <a href={person.linkedin} target="_blank" rel="noreferrer">
+                  LinkedIn
+                </a>
+              </li>
+              <li>
+                <a href={person.github} target="_blank" rel="noreferrer">
+                  GitHub
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
+      <footer className="footer wrap">
+        <p>© {new Date().getFullYear()} Amrit Chauhan</p>
+        <p>Built with React, Three.js and GSAP</p>
+      </footer>
     </section>
   );
 }

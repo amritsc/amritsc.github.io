@@ -1,11 +1,13 @@
 import { useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { education, story, toolkit } from '../data';
+import { education, stats, story } from '../data';
+import { CountUp } from './fx';
 
 function Word({ children, progress, range }) {
-  const opacity = useTransform(progress, range, [0.16, 1]);
+  const opacity = useTransform(progress, range, [0.12, 1]);
+  const blur = useTransform(progress, range, ['blur(6px)', 'blur(0px)']);
   return (
-    <motion.span className="story__word" style={{ opacity }}>
+    <motion.span className="story__word" style={{ opacity, filter: blur }}>
       {children}{' '}
     </motion.span>
   );
@@ -14,36 +16,35 @@ function Word({ children, progress, range }) {
 export default function Story() {
   const ref = useRef(null);
   const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.55'] });
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.45'] });
   const words = story.split(' ');
 
   return (
-    <section className="story chapter chapter--ink" id="about">
+    <section className="story" id="about" data-scene="1">
       <div className="wrap">
         <p className="story__text" ref={ref}>
           {reduce
             ? story
             : words.map((w, i) => (
-                <Word key={i} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]}>
+                <Word key={i} progress={scrollYProgress} range={[i / words.length, (i + 1.5) / words.length]}>
                   {w}
                 </Word>
               ))}
         </p>
 
-        <div className="story__facts">
-          {toolkit.map((g) => (
-            <div className="story__fact" key={g.group}>
-              <h3>{g.group}</h3>
-              <p>{g.items.join(', ')}</p>
-            </div>
+        <ul className="stats">
+          {stats.map((s) => (
+            <li className="stat" key={s.label}>
+              <span className="stat__num">
+                <CountUp to={s.value} prefix={s.prefix} suffix={s.suffix} />
+              </span>
+              <span className="stat__label">{s.label}</span>
+            </li>
           ))}
-          <div className="story__fact">
-            <h3>Education</h3>
-            <p>
-              {education.degree}, {education.school}, <em>{education.honors}</em>
-            </p>
-          </div>
-        </div>
+        </ul>
+        <p className="story__edu">
+          {education.degree}, {education.school}, <em>{education.honors}</em>
+        </p>
       </div>
     </section>
   );

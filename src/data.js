@@ -202,3 +202,26 @@ export const certTracks = [
 ];
 
 export const statusLabel = { earned: 'Earned', 'in-progress': 'In progress', planned: 'Planned' };
+
+export const roles = ['AI Architect.', 'Cloud Strategist.', 'Agent Builder.', 'Copilot Specialist.'];
+export const tagline = 'Turning AI ambition into production reality.';
+
+export const stats = [
+  { value: 500, prefix: '$', suffix: 'K+', label: 'saved a year for AWS clients through serverless optimization' },
+  { value: 24, suffix: '+', label: 'AWS services covered by the resiliency guides I wrote at JPMorgan Chase' },
+  { value: 8, label: 'cloud and AI certifications earned across Azure, AWS and Databricks' },
+  { value: 90, suffix: '%', label: 'faster enterprise login from the SSO integration I built at Prudential' },
+];
+
+export const keywords = ['Agentic AI', 'Copilot Studio', 'Foundry', 'MCP', 'RAG', 'Multi-agent orchestration', 'AI governance', 'Serverless'];
+
+// Accent and start year for each experience card, in the same order as `experience`.
+export const jobStyle = [
+  { year: '2026', tint: '#22d3ee' },
+  { year: '2024', tint: '#8b5cf6' },
+  { year: '2022', tint: '#f59e0b' },
+  { year: '2020', tint: '#4fd8c4' },
+];
+
+// Lets long CamelCase agent names wrap between words instead of mid-word.
+export const breakable = (name) => name.replace(/([a-z])([A-Z])/g, '$1\u200B$2');

@@ -1,6 +1,6 @@
 # amritsc.github.io
 
-Personal site for Amrit Chauhan, built with React, Vite and Framer Motion and deployed to GitHub Pages on every push to `main`.
+Personal site for Amrit Chauhan, built with React, Vite, Three.js, GSAP and Framer Motion and deployed to GitHub Pages on every push to `main`.
 
 ## Editing content
 
@@ -18,4 +18,4 @@ npm run dev
 
 ## Stack
 
-React 18, Vite 5, Framer Motion 11, Bricolage Grotesque and Instrument Sans (Fontsource), Simple Icons.
+React 18, Vite 5, Three.js (custom particle shader), GSAP ScrollTrigger, Lenis smooth scroll, Framer Motion 11, Bricolage Grotesque and Instrument Sans (Fontsource), Simple Icons.

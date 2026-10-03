@@ -1,213 +1,116 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion, useScroll, useMotionValueEvent } from 'framer-motion';
-import { person, stages, traceRun } from '../data';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { person, roles, tagline } from '../data';
+import { Magnetic, useScramble } from './fx';
 
-const stageColor = Object.fromEntries(stages.map((s) => [s.id, s.color]));
-const stageLabel = Object.fromEntries(stages.map((s) => [s.id, s.label]));
-
-const fmtClock = (s) => {
-  const m = Math.floor(s / 60);
-  const r = Math.floor(s % 60);
-  return `${m}:${String(r).padStart(2, '0')}`;
-};
-const fmtLong = (s) => `${Math.floor(s / 60)}m ${Math.round(s % 60)}s`;
-
-function Name() {
-  const ref = useRef(null);
+function RoleCycler({ start }) {
+  const [i, setI] = useState(0);
   const reduce = useReducedMotion();
-  const { scrollY } = useScroll();
-
-  // The name condenses as you scroll away from it.
-  useMotionValueEvent(scrollY, 'change', (y) => {
-    if (reduce || !ref.current) return;
-    const p = Math.min(Math.max(y / 520, 0), 1);
-    ref.current.style.fontStretch = `${100 - p * 25}%`;
-    ref.current.style.letterSpacing = `${-0.035 - p * 0.01}em`;
-    ref.current.style.fontWeight = `${800 - p * 90}`;
-  });
-
-  let i = 0;
+  useEffect(() => {
+    if (!start || reduce) return undefined;
+    const id = setInterval(() => setI((n) => (n + 1) % roles.length), 2600);
+    return () => clearInterval(id);
+  }, [start, reduce]);
+  const text = useScramble(roles[i], start, 700);
   return (
-    <h1 className="hero__name" ref={ref} aria-label={person.name.join(' ')}>
-      {person.name.map((word) => (
-        <span className="hero__word" key={word} aria-hidden="true">
-          {word.split('').map((ch) => {
-            const d = i++;
-            return (
-              <span className="hero__mask" key={d}>
-                <motion.span
-                  className="hero__char"
-                  initial={reduce ? false : { y: '105%' }}
-                  animate={{ y: '0%' }}
-                  transition={{ duration: 0.9, delay: 0.08 + d * 0.035, ease: [0.2, 0.7, 0.1, 1] }}
-                >
-                  {ch}
-                </motion.span>
-              </span>
-            );
-          })}
+    <span className="hero__role-cycle" aria-live="off">
+      {start ? text : ' '}
+    </span>
+  );
+}
+
+const GRAD = [
+  [34, 211, 238],
+  [59, 130, 246],
+  [139, 92, 246],
+];
+const gradAt = (t) => {
+  const seg = Math.min(Math.floor(t * 2), 1);
+  const f = t * 2 - seg;
+  const a = GRAD[seg];
+  const b = GRAD[seg + 1];
+  return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(',')})`;
+};
+
+function BigLine({ word, delay, start, className, gradient }) {
+  const reduce = useReducedMotion();
+  return (
+    <span className={`hero__line ${className}`} aria-hidden="true">
+      {word.split('').map((ch, i) => (
+        <span className="hero__mask" key={i}>
+          <motion.span
+            className="hero__char"
+            style={gradient ? { color: gradAt(i / Math.max(word.length - 1, 1)) } : undefined}
+            initial={reduce ? false : { y: '110%', rotate: 8 }}
+            animate={start ? { y: '0%', rotate: 0 } : undefined}
+            transition={{ duration: 1.1, delay: delay + i * 0.045, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {ch}
+          </motion.span>
         </span>
       ))}
-    </h1>
+    </span>
   );
 }
 
-function Trace() {
+export default function Hero({ ready }) {
+  const ref = useRef(null);
   const reduce = useReducedMotion();
-  const { total, spans, title } = traceRun;
-  const [t, setT] = useState(reduce ? total : 0);
-  const [run, setRun] = useState(0);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
+  const y1 = useTransform(scrollYProgress, [0, 1], ['0%', '-60%']);
+  const y2 = useTransform(scrollYProgress, [0, 1], ['0%', '-25%']);
+  const spread = useTransform(scrollYProgress, [0, 1], ['-0.04em', '0.06em']);
+  const fade = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
 
-  useEffect(() => {
-    if (reduce) {
-      setT(total);
-      return undefined;
-    }
-    setT(0);
-    let raf;
-    let start;
-    const duration = 7200;
-    const delay = run === 0 ? 1100 : 250;
-    const tick = (now) => {
-      if (start === undefined) start = now;
-      const p = Math.min(Math.max((now - start - delay) / duration, 0), 1);
-      setT(p * total);
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [run, reduce, total]);
-
-  const done = t >= total;
-  const pct = (v) => `${(v / total) * 100}%`;
-  const ticks = [0, 60, 120, 180, 240];
+  const fadeIn = (d) => ({
+    initial: reduce ? false : { opacity: 0, y: 20 },
+    animate: ready ? { opacity: 1, y: 0 } : undefined,
+    transition: { duration: 0.9, delay: d, ease: [0.16, 1, 0.3, 1] },
+  });
 
   return (
-    <motion.figure
-      className="trace"
-      initial={reduce ? false : { opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 0.7, ease: [0.2, 0.7, 0.1, 1] }}
-    >
-      <header className="trace__head">
-        <div>
-          <p className="trace__kicker">Illustrative agent run</p>
-          <p className="trace__title">{title}</p>
-        </div>
-        <div className="trace__status" aria-live="polite">
-          <span className={`trace__dot ${done ? 'is-done' : ''}`} />
-          {done ? `Resolved in ${fmtLong(total)}` : `Running ${fmtClock(t)}`}
-        </div>
-        <button className="trace__replay" type="button" onClick={() => setRun((r) => r + 1)} disabled={!done}>
-          Replay
-        </button>
-      </header>
+    <section className="hero" id="top" ref={ref} data-scene="0">
+      <motion.div className="hero__inner wrap" style={reduce ? undefined : { opacity: fade }}>
+        <motion.p className="hero__badge" {...fadeIn(0.1)}>
+          <span className="hero__live" aria-hidden="true" />
+          Sr. Cloud Solutions Architect @ Microsoft
+        </motion.p>
 
-      <div className="trace__body">
-        <div className="trace__overlay" aria-hidden="true">
-          <span />
-          <div className="trace__overlay-track">
-            {ticks.map((s) => (
-              <i key={s} className="trace__grid" style={{ left: pct(s) }} />
-            ))}
-            {!done && <i className="trace__playhead" style={{ left: pct(t) }} />}
-          </div>
-          <span />
-        </div>
+        <h1 className="hero__name" aria-label={person.name.join(' ')}>
+          <motion.span style={reduce ? undefined : { y: y1, letterSpacing: spread }} className="hero__row">
+            <BigLine word={person.name[0]} delay={0.15} start={ready} className="hero__line--a" />
+          </motion.span>
+          <motion.span style={reduce ? undefined : { y: y2, letterSpacing: spread }} className="hero__row hero__row--b">
+            <BigLine word={person.name[1]} delay={0.35} start={ready} className="hero__line--b" gradient />
+          </motion.span>
+        </h1>
 
-        <div className="trace__row trace__row--root">
-          <div className="trace__label">
-            <span className="trace__who">Orchestrator run</span>
-          </div>
-          <div className="trace__track">
-            <span className="trace__bar trace__bar--root" style={{ left: 0, width: pct(Math.min(t, total)) }} />
-          </div>
-          <span className="trace__dur">{fmtClock(Math.min(t, total))}</span>
-        </div>
-
-        {spans.map((s) => {
-          const progress = Math.min(Math.max((t - s.start) / (s.end - s.start), 0), 1);
-          const active = t >= s.start && t < s.end;
-          const finished = t >= s.end;
-          return (
-            <div className={`trace__row ${active ? 'is-active' : ''} ${t < s.start ? 'is-waiting' : ''}`} key={s.stage}>
-              <div className="trace__label">
-                <span className="trace__swatch" style={{ background: stageColor[s.stage] }} />
-                <span className="trace__stage">{stageLabel[s.stage]}</span>
-                <span className="trace__who">{s.who}</span>
-              </div>
-              <div className="trace__track">
-                <span
-                  className="trace__bar"
-                  style={{
-                    left: pct(s.start),
-                    width: `${((s.end - s.start) / total) * 100 * progress}%`,
-                    background: stageColor[s.stage],
-                  }}
-                />
-                <span
-                  className={`trace__note ${finished ? 'is-shown' : ''} ${s.start / total > 0.45 ? 'is-end' : ''}`}
-                  style={s.start / total > 0.45 ? { right: pct(total - s.end) } : { left: pct(s.start) }}
-                >
-                  {s.note}
-                </span>
-              </div>
-              <span className="trace__dur">{finished ? `${s.end - s.start}s` : active ? '…' : ''}</span>
-            </div>
-          );
-        })}
-
-        <div className="trace__axis" aria-hidden="true">
-          <span />
-          <div className="trace__axis-track">
-            {ticks.map((s) => (
-              <span key={s} style={{ left: pct(s) }}>
-                {s === 0 ? '0' : `${s / 60}m`}
-              </span>
-            ))}
-          </div>
-          <span />
-        </div>
-      </div>
-
-      <figcaption className="trace__caption">
-        A simulated run of the incident-response orchestrator I built for the JPMorgan Chase Agentic AI Hackathon.{' '}
-        <a href="#agents">Meet the agents</a>
-      </figcaption>
-    </motion.figure>
-  );
-}
-
-export default function Hero() {
-  const reduce = useReducedMotion();
-  return (
-    <section className="hero chapter chapter--ink" id="top">
-      <div className="wrap">
-        <Name />
-        <div className="hero__grid">
-          <motion.div
-            className="hero__intro"
-            initial={reduce ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.55, ease: [0.2, 0.7, 0.1, 1] }}
-          >
-            <p className="hero__role">
-              <span className="hero__live" aria-hidden="true" />
-              {person.role}
+        <div className="hero__foot">
+          <motion.div className="hero__copy" {...fadeIn(0.9)}>
+            <p className="hero__roles">
+              <RoleCycler start={ready} />
             </p>
-            <p className="hero__pitch">{person.pitch}</p>
-            <div className="hero__actions">
-              <a className="btn btn--solid" href={`mailto:${person.email}`}>
-                Email me
-              </a>
-              <a className="btn btn--line" href="#agents">
-                See the agents
-              </a>
-            </div>
+            <p className="hero__tagline">{tagline}</p>
           </motion.div>
-          <Trace />
+          <motion.div className="hero__actions" {...fadeIn(1.05)}>
+            <Magnetic>
+              <a className="btn btn--glow" href="#contact">
+                Get in touch
+              </a>
+            </Magnetic>
+            <Magnetic>
+              <a className="btn btn--ghost" href="#agents">
+                See my agents
+              </a>
+            </Magnetic>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
+
+      <motion.a href="#about" className="hero__scroll" {...fadeIn(1.3)} aria-label="Scroll to the next section">
+        <span className="hero__scroll-line" />
+        Scroll
+      </motion.a>
     </section>
   );
 }
