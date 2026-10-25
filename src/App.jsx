@@ -1,176 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { lazy, Suspense, useCallback, useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { CompanyLogo } from './components/logos';
+import Banner from './components/Banner';
+import Trace from './components/Trace';
+import LiveRepos from './components/LiveRepos';
+import { ArchitectureDiagram, CopyEmail, Icon, IconTile, PrimaryButton, SecondaryButton } from './components/ui';
+import { Cursor, Preloader, ScrollProgress } from './components/fx';
+import { scene, ScrollTrigger, startSmoothScroll, watchScenes } from './lib/scene';
 
-// Hook to detect mobile devices
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  
-  return isMobile;
-};
-
-// Enhanced dynamic particle field with connections
-const ParticleField = () => {
-  const isMobile = useIsMobile();
-  
-  // MOBILE: Simple static dots, no animations
-  if (isMobile) {
-    const mobileParticles = Array.from({ length: 12 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      opacity: Math.random() * 0.3 + 0.1,
-    }));
-    
-    return (
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {mobileParticles.map((p) => (
-          <div
-            key={p.id}
-            className="absolute rounded-full"
-            style={{
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              width: p.size,
-              height: p.size,
-              backgroundColor: p.id % 3 === 0 ? 'rgba(6, 182, 212, 0.5)' : 
-                              p.id % 3 === 1 ? 'rgba(59, 130, 246, 0.4)' : 
-                              'rgba(147, 51, 234, 0.3)',
-              opacity: p.opacity,
-            }}
-          />
-        ))}
-      </div>
-    );
-  }
-  
-  // DESKTOP: Full animated particles (unchanged)
-  const particles = Array.from({ length: 60 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 4 + 1,
-    duration: Math.random() * 20 + 15,
-    delay: Math.random() * 8,
-    opacity: Math.random() * 0.4 + 0.1,
-  }));
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-            backgroundColor: p.id % 3 === 0 ? 'rgba(6, 182, 212, 0.6)' : 
-                            p.id % 3 === 1 ? 'rgba(59, 130, 246, 0.5)' : 
-                            'rgba(147, 51, 234, 0.4)',
-            boxShadow: p.size > 3 ? `0 0 ${p.size * 3}px rgba(6, 182, 212, 0.3)` : 'none',
-          }}
-          animate={{
-            y: [0, -50, 0],
-            x: [0, Math.random() * 30 - 15, 0],
-            opacity: [p.opacity, p.opacity + 0.2, p.opacity],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-
-      <svg className="absolute inset-0 w-full h-full">
-        <defs>
-          <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(6, 182, 212, 0)" />
-            <stop offset="50%" stopColor="rgba(6, 182, 212, 0.3)" />
-            <stop offset="100%" stopColor="rgba(6, 182, 212, 0)" />
-          </linearGradient>
-          <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(59, 130, 246, 0)" />
-            <stop offset="50%" stopColor="rgba(59, 130, 246, 0.2)" />
-            <stop offset="100%" stopColor="rgba(59, 130, 246, 0)" />
-          </linearGradient>
-        </defs>
-        {Array.from({ length: 12 }, (_, i) => (
-          <motion.line
-            key={i}
-            x1={`${10 + (i * 7) % 80}%`}
-            y1={`${5 + (i * 13) % 90}%`}
-            x2={`${20 + (i * 11) % 70}%`}
-            y2={`${15 + (i * 17) % 80}%`}
-            stroke={i % 2 === 0 ? "url(#lineGradient1)" : "url(#lineGradient2)"}
-            strokeWidth="1"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: [0, 1, 0], opacity: [0, 0.6, 0] }}
-            transition={{ duration: 4 + i * 0.5, delay: i * 0.8, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ))}
-      </svg>
-    </div>
-  );
-};
-
-// Gradient orbs
-const GradientOrbs = () => {
-  const isMobile = useIsMobile();
-  
-  // MOBILE: Static, no blur (blur is very expensive on mobile)
-  if (isMobile) {
-    return (
-      <>
-        <div
-          className="absolute top-1/4 -left-32 w-64 h-64 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.4) 0%, transparent 70%)' }}
-        />
-        <div
-          className="absolute bottom-1/4 -right-32 w-56 h-56 rounded-full opacity-15"
-          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%)' }}
-        />
-      </>
-    );
-  }
-  
-  // DESKTOP: Full animated orbs with blur (unchanged)
-  return (
-    <>
-      <motion.div
-        className="absolute top-1/4 -left-32 w-96 h-96 rounded-full opacity-30"
-        style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.4) 0%, transparent 70%)', filter: 'blur(60px)' }}
-        animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-1/4 -right-32 w-80 h-80 rounded-full opacity-25"
-        style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)', filter: 'blur(50px)' }}
-        animate={{ x: [0, -25, 0], y: [0, 30, 0], scale: [1, 1.15, 1] }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-10"
-        style={{ background: 'radial-gradient(circle, rgba(147,51,234,0.3) 0%, transparent 70%)', filter: 'blur(80px)' }}
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-      />
-    </>
-  );
-};
+const Particles = lazy(() => import('./components/Particles'));
 
 // Social links
 const SocialLinks = ({ size = "default", className = "" }) => {
@@ -188,7 +26,7 @@ const SocialLinks = ({ size = "default", className = "" }) => {
           href={link.url}
           target={link.name !== "Email" ? "_blank" : undefined}
           rel="noopener noreferrer"
-          className={`${size === "large" ? "w-12 h-12 text-slate-400 hover:text-cyan-400" : "w-9 h-9 text-slate-500 hover:text-cyan-400"} rounded-xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300`}
+          className={`${size === "large" ? "w-12 h-12 text-slate-300" : "w-9 h-9 text-slate-400"} rounded-full bg-white/[0.04] ring-1 ring-white/10 flex items-center justify-center hover:text-white hover:ring-white/30 hover:bg-white/[0.08] transition-all duration-300`}
           whileHover={{ scale: 1.1, y: -2 }}
           whileTap={{ scale: 0.95 }}
           title={link.name}
@@ -240,40 +78,6 @@ const Navigation = () => {
   );
 };
 
-// Quick Nav Tabs for Hero
-const QuickNavTabs = () => {
-  const tabs = [
-    { label: "Who I Am", href: "#about", icon: "👤" },
-    { label: "What I Build", href: "#projects", icon: "🛠️" },
-    { label: "AI in Action", href: "#agents", icon: "🤖" },
-    { label: "Where I've Been", href: "#experience", icon: "💼" },
-    { label: "Credentials", href: "#certifications", icon: "🎖️" },
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 1.3 }}
-      className="flex flex-wrap justify-center gap-4 md:gap-3 mb-12 px-4"
-    >
-      {tabs.map((tab, index) => (
-        <motion.a
-          key={tab.label}
-          href={tab.href}
-          className="group relative flex items-center gap-2 px-5 py-3 md:py-2.5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/60 rounded-full text-sm text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.3 + index * 0.08, duration: 0.4 }}
-        >
-          <span className="text-base">{tab.icon}</span>
-          <span className="font-medium">{tab.label}</span>
-        </motion.a>
-      ))}
-    </motion.div>
-  );
-};
-
 // Hero Section
 const HeroSection = () => {
   const taglineParts = [
@@ -283,9 +87,7 @@ const HeroSection = () => {
   ];
 
   return (
-    <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-slate-950 pt-24 md:pt-0">
-      <GradientOrbs />
-      <ParticleField />
+    <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-24 md:pt-0">
       
       <div className="relative z-10 text-center px-4 max-w-5xl">
         <motion.div initial={{ opacity: 0, y: 20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6 }} className="mb-6">
@@ -322,32 +124,14 @@ const HeroSection = () => {
           ))}
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }} className="flex flex-wrap justify-center gap-4 mb-8">
-          <motion.a
-            href="#contact"
-            className="group relative px-8 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl overflow-hidden shadow-lg shadow-cyan-500/25"
-            whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(6, 182, 212, 0.3)" }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <span className="relative z-10">Get In Touch</span>
-            <motion.div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-500" initial={{ x: "100%" }} whileHover={{ x: 0 }} transition={{ duration: 0.3 }} />
-          </motion.a>
-          <motion.a
-            href="#projects"
-            className="px-8 py-3.5 border border-slate-600 text-slate-300 font-semibold rounded-xl hover:border-cyan-500/50 hover:text-cyan-400 hover:bg-cyan-500/5 transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            View My Work
-          </motion.a>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }} className="flex flex-wrap justify-center gap-3 mb-10">
+          <PrimaryButton href="#contact">Get in touch</PrimaryButton>
+          <SecondaryButton href="#projects" icon="chevron">View my work</SecondaryButton>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.1 }} className="flex justify-center mb-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.1 }} className="flex justify-center mb-14">
           <SocialLinks size="large" />
         </motion.div>
-
-        {/* Quick Nav Tabs */}
-        <QuickNavTabs />
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }} className="flex flex-col items-center gap-2">
           <span className="text-xs text-slate-500 tracking-widest">SCROLL</span>
@@ -441,35 +225,29 @@ const WorkSection = () => {
     { 
       title: "AI & Machine Learning", 
       desc: "LLM integrations, model training, NLP pipelines, and intelligent automation", 
-      icon: "🧠",
+      icon: "sparkles",
       color: "cyan"
     },
     { 
       title: "Agentic Systems", 
       desc: "Multi-agent orchestration, autonomous workflows, and cognitive architectures", 
-      icon: "🤖",
+      icon: "network",
       color: "purple"
     },
     { 
       title: "Cloud Infrastructure", 
       desc: "Production-ready IaC templates for AWS, Azure, and hybrid deployments", 
-      icon: "☁️",
+      icon: "cloud",
       color: "blue"
     },
     { 
       title: "Automation & Dev Tools", 
       desc: "CLI utilities, CI/CD pipelines, and developer productivity tooling", 
-      icon: "⚡",
+      icon: "bolt",
       color: "green"
     },
   ];
 
-  const colorMap = {
-    cyan: "border-cyan-500/30 hover:border-cyan-500/50 hover:shadow-cyan-500/10",
-    purple: "border-purple-500/30 hover:border-purple-500/50 hover:shadow-purple-500/10",
-    blue: "border-blue-500/30 hover:border-blue-500/50 hover:shadow-blue-500/10",
-    green: "border-emerald-500/30 hover:border-emerald-500/50 hover:shadow-emerald-500/10",
-  };
 
   return (
     <section id="projects" className="py-32 px-4 bg-slate-900/30 relative" ref={ref}>
@@ -495,11 +273,11 @@ const WorkSection = () => {
             href="https://github.com/amritsc"
             target="_blank"
             rel="noopener noreferrer"
-            className="block p-8 bg-gradient-to-br from-slate-800/60 to-slate-800/30 border border-slate-700/50 rounded-2xl hover:border-cyan-500/40 transition-all duration-300 group"
-            whileHover={{ scale: 1.01, y: -4 }}
+            className="card-lift block p-8 group"
+            style={{ '--accent': '#22d3ee' }}
           >
             <div className="flex flex-col md:flex-row md:items-center gap-6">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-cyan-500/20 transition-all duration-300">
+              <div className="w-20 h-20 rounded-[22px] bg-gradient-to-br from-slate-700/80 to-slate-900 ring-1 ring-white/10 flex items-center justify-center group-hover:ring-cyan-400/40 transition-all duration-300">
                 <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                 </svg>
@@ -507,13 +285,9 @@ const WorkSection = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h4 className="text-2xl font-bold text-white">github.com/amritsc</h4>
-                  <motion.span 
-                    className="text-cyan-400"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    →
-                  </motion.span>
+                  <span className="w-8 h-8 rounded-full bg-white/[0.06] ring-1 ring-white/10 flex items-center justify-center text-slate-300 group-hover:bg-white group-hover:text-slate-950 transition-all duration-300">
+                    <Icon name="arrowUpRight" className="w-4 h-4" />
+                  </span>
                 </div>
                 <p className="text-slate-400 mb-4">
                   Explore my public repositories featuring AI agents, ML experiments, cloud infrastructure templates, automation scripts, 
@@ -539,15 +313,17 @@ const WorkSection = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-              whileHover={{ scale: 1.03, y: -4 }}
-              className={`p-6 bg-slate-800/30 border ${colorMap[project.color]} rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer`}
+              className="card-lift p-6"
+              style={{ '--accent': { cyan: '#22d3ee', purple: '#a78bfa', blue: '#60a5fa', green: '#34d399' }[project.color] }}
             >
-              <div className="text-3xl mb-4">{project.icon}</div>
-              <h5 className="text-lg font-bold text-white mb-2">{project.title}</h5>
-              <p className="text-slate-400 text-sm">{project.desc}</p>
+              <IconTile icon={project.icon} color={project.color} />
+              <h5 className="text-lg font-semibold text-white mt-5 mb-2">{project.title}</h5>
+              <p className="text-slate-400 text-sm leading-relaxed">{project.desc}</p>
             </motion.div>
           ))}
         </div>
+
+        <LiveRepos />
       </div>
     </section>
   );
@@ -565,6 +341,7 @@ const AgentsSection = () => {
       capabilities: ["Auto-classification", "Keyword search", "Priority scoring", "Auto-reply templates"],
       tech: ["OpenAI", "Python", "Agent SDK", "API"],
       color: "cyan",
+      icon: "mail",
     },
     {
       name: "MoMSummariserAgent",
@@ -572,6 +349,7 @@ const AgentsSection = () => {
       capabilities: ["Transcript analysis", "Action item extraction", "Intent detection", "Audio transcription"],
       tech: ["OpenAI", "Jupyter Notebooks", "Python", "API"],
       color: "purple",
+      icon: "doc",
     },
     {
       name: "CoderAgent",
@@ -579,6 +357,7 @@ const AgentsSection = () => {
       capabilities: ["Code analysis", "Root cause detection", "Auto-fix generation", "QA validation"],
       tech: ["OpenAI", "Agent SDK", "Python", "AST"],
       color: "green",
+      icon: "code",
     },
     {
       name: "SmartDebuggerAgent",
@@ -586,6 +365,7 @@ const AgentsSection = () => {
       capabilities: ["Similarity search", "Knowledge retrieval", "Pattern matching", "Solution suggestions"],
       tech: ["RAG", "OpenAI", "Jupyter Notebooks", "API"],
       color: "orange",
+      icon: "search",
     },
     {
       name: "IncidentResponseOrchestrator",
@@ -593,6 +373,7 @@ const AgentsSection = () => {
       capabilities: ["Agent orchestration", "Workflow automation", "Metrics tracking", "Full incident lifecycle"],
       tech: ["Multi-Agent", "Agent SDK", "OpenAI", "Python"],
       color: "blue",
+      icon: "hub",
       featured: true,
     },
   ];
@@ -625,52 +406,19 @@ const AgentsSection = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-12 p-8 bg-slate-800/30 border border-slate-700/50 rounded-2xl"
+          className="mb-12"
         >
-          <h4 className="text-lg font-bold text-white mb-6 text-center">System Architecture</h4>
-          <div className="flex flex-col items-center gap-4">
-            <motion.div 
-              className="px-6 py-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/40 rounded-xl text-blue-400 font-semibold"
-              animate={{ boxShadow: ["0 0 20px rgba(59,130,246,0.2)", "0 0 40px rgba(59,130,246,0.4)", "0 0 20px rgba(59,130,246,0.2)"] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              IncidentResponseOrchestrator
-            </motion.div>
-            
-            <div className="flex items-center gap-2">
-              {[0,1,2,3].map(i => (
-                <motion.div 
-                  key={i}
-                  className="w-0.5 h-8 bg-gradient-to-b from-blue-500/50 to-transparent"
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 1.5, delay: i * 0.2, repeat: Infinity }}
-                />
-              ))}
-            </div>
+          <ArchitectureDiagram />
+        </motion.div>
 
-            <div className="flex flex-wrap justify-center gap-4">
-              {["EmailClassifier", "MoMSummariser", "Coder", "SmartDebugger"].map((name, i) => (
-                <motion.div
-                  key={name}
-                  className="px-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-300 text-sm font-medium"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.4 + i * 0.1 }}
-                  whileHover={{ scale: 1.05, borderColor: 'rgba(6, 182, 212, 0.5)' }}
-                >
-                  {name}Agent
-                </motion.div>
-              ))}
-            </div>
-
-            <motion.div 
-              className="mt-4 text-[9px] sm:text-xs text-slate-500 text-center px-2 whitespace-nowrap"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              Alert→Classify→Summarize→Debug→Fix→Deploy
-            </motion.div>
-          </div>
+        {/* Live run of the orchestrator */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.25 }}
+          className="mb-12"
+        >
+          <Trace />
         </motion.div>
 
         {/* Agent Cards */}
@@ -683,17 +431,13 @@ const AgentsSection = () => {
                 initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -4 }}
-                className={`group p-6 bg-gradient-to-br ${colors.bg} border ${colors.border} rounded-2xl hover:shadow-lg ${colors.glow} transition-all duration-300 ${agent.featured ? 'md:col-span-2 lg:col-span-1' : ''}`}
+                className={`card-lift card-accent group p-6 ${agent.featured ? 'md:col-span-2 lg:col-span-1' : ''}`}
+                style={{ '--accent': { cyan: '#22d3ee', purple: '#a78bfa', green: '#34d399', orange: '#fb923c', blue: '#60a5fa' }[agent.color] }}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center ${colors.accent} group-hover:shadow-lg transition-all duration-300`}>
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
+                <div className="flex items-start justify-between mb-5">
+                  <IconTile icon={agent.icon} color={agent.color} />
                   {agent.featured && (
-                    <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full font-medium">Orchestrator</span>
+                    <span className="text-xs px-2.5 py-1 bg-blue-500/15 text-blue-300 ring-1 ring-blue-400/30 rounded-full font-medium">Orchestrator</span>
                   )}
                 </div>
                 
@@ -704,14 +448,14 @@ const AgentsSection = () => {
                   <p className="text-xs text-slate-500 mb-2">Capabilities:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {agent.capabilities.map((cap) => (
-                      <span key={cap} className="text-xs px-2 py-0.5 bg-slate-700/50 text-slate-300 rounded">{cap}</span>
+                      <span key={cap} className="text-xs px-2.5 py-1 bg-white/[0.05] ring-1 ring-white/10 text-slate-300 rounded-full">{cap}</span>
                     ))}
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   {agent.tech.map((t) => (
-                    <span key={t} className={`text-xs px-2.5 py-1 bg-slate-800/50 ${colors.accent} rounded-lg font-medium`}>{t}</span>
+                    <span key={t} className={`text-xs px-2.5 py-1 bg-slate-950/40 ${colors.accent} rounded-full font-medium`}>{t}</span>
                   ))}
                 </div>
               </motion.div>
@@ -725,16 +469,14 @@ const AgentsSection = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.8 + i * 0.1 }}
-              className="p-6 border border-dashed border-slate-700/50 rounded-2xl flex items-center justify-center min-h-[280px] group hover:border-slate-600/50 transition-colors"
+              className="coming-soon p-6 rounded-3xl flex items-center justify-center min-h-[280px] group"
             >
               <div className="text-center">
-                <div className="w-12 h-12 rounded-xl bg-slate-800/50 flex items-center justify-center mx-auto mb-3 text-slate-600 group-hover:text-slate-500 transition-colors">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-                  </svg>
+                <div className="w-12 h-12 rounded-full border border-dashed border-white/15 bg-white/[0.03] flex items-center justify-center mx-auto mb-4 text-slate-500 group-hover:text-slate-300 group-hover:border-white/30 transition-all duration-300">
+                  <Icon name="plus" className="w-5 h-5" />
                 </div>
-                <p className="text-slate-600 text-sm font-medium">More agents coming soon</p>
-                <p className="text-slate-700 text-xs mt-1">Production systems in development</p>
+                <p className="text-slate-400 text-sm font-medium">More agents coming soon</p>
+                <p className="text-slate-600 text-xs mt-1">Production systems in development</p>
               </div>
             </motion.div>
           ))}
@@ -744,52 +486,6 @@ const AgentsSection = () => {
   );
 };
 
-// V3 Style Company Logos - Fixed Chase logo
-const CompanyLogo = ({ company }) => {
-  const logos = {
-    jpmc: (
-      <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
-        <svg viewBox="0 0 100 100" className="w-10 h-10">
-          <g fill="#117ACA">
-            <path d="M50 5 L75 20 L75 45 L50 30 Z" />
-            <path d="M95 50 L80 75 L55 75 L70 50 Z" />
-            <path d="M50 95 L25 80 L25 55 L50 70 Z" />
-            <path d="M5 50 L20 25 L45 25 L30 50 Z" />
-          </g>
-        </svg>
-      </div>
-    ),
-    aws: (
-      <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
-        <svg viewBox="0 0 100 100" className="w-8 h-8">
-          <path d="M30 60 Q50 75 70 60" stroke="#FF9900" strokeWidth="6" fill="none"/>
-          <path d="M25 45 L40 35 L40 55 Z" fill="#FF9900"/>
-          <path d="M45 45 L60 35 L60 55 Z" fill="#FF9900"/>
-          <path d="M65 45 L80 35 L80 55 Z" fill="#FF9900"/>
-        </svg>
-      </div>
-    ),
-    microsoft: (
-      <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
-        <svg viewBox="0 0 100 100" className="w-8 h-8">
-          <rect x="10" y="10" width="38" height="38" fill="#F25022"/>
-          <rect x="52" y="10" width="38" height="38" fill="#7FBA00"/>
-          <rect x="10" y="52" width="38" height="38" fill="#00A4EF"/>
-          <rect x="52" y="52" width="38" height="38" fill="#FFB900"/>
-        </svg>
-      </div>
-    ),
-    prudential: (
-      <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
-        <svg viewBox="0 0 100 100" className="w-8 h-8">
-          <path d="M50 15 L85 85 L15 85 Z" fill="none" stroke="#0066cc" strokeWidth="4"/>
-          <path d="M50 30 L70 70 L30 70 Z" fill="#0066cc"/>
-        </svg>
-      </div>
-    ),
-  };
-  return logos[company] || null;
-};
 
 // Experience Section
 const ExperienceSection = () => {
@@ -972,7 +668,7 @@ const CertificationsSection = () => {
         { name: "Microsoft Certified: Azure AI Fundamentals", code: "AI-900", status: "completed" },
         { name: "Microsoft Certified: Azure Data Fundamentals", code: "DP-900", status: "completed" },
         { name: "Microsoft Certified: Azure AI Engineer Associate", code: "AI-102", status: "completed" },
-        { name: "Microsoft 365 Certified: Copilot and Agent Administration Fundamentals", code: "AB-900", status: "upcoming" },
+        { name: "Microsoft 365 Certified: Copilot and Agent Administration Fundamentals", code: "AB-900", status: "completed" },
         { name: "Microsoft Certified: Azure Solutions Architect Expert", code: "AZ-305", status: "completed" },
       ],
     },
@@ -1081,16 +777,12 @@ const ContactSection = () => {
           <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Let's build something together.</h3>
           <p className="text-slate-400 text-lg mb-10 max-w-xl mx-auto">Whether you're looking to discuss AI strategy, cloud architecture, or just want to connect—I'm always open to a conversation.</p>
 
-          <SocialLinks size="large" className="justify-center mb-10" />
+          <div className="flex flex-wrap justify-center gap-3 mb-10">
+            <PrimaryButton href="mailto:amrit.satnaam@gmail.com" icon="arrowUpRight">Say hello</PrimaryButton>
+            <CopyEmail email="amrit.satnaam@gmail.com" />
+          </div>
 
-          <motion.a
-            href="mailto:amrit.satnaam@gmail.com"
-            className="inline-block px-10 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/25"
-            whileHover={{ scale: 1.05, boxShadow: "0 25px 50px rgba(6, 182, 212, 0.3)" }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Say Hello
-          </motion.a>
+          <SocialLinks size="large" className="justify-center" />
         </motion.div>
 
         <motion.div initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ duration: 0.6, delay: 0.4 }} className="mt-24 pt-8 border-t border-slate-800">
@@ -1103,16 +795,45 @@ const ContactSection = () => {
 
 // Main App
 export default function Portfolio() {
+  const [ready, setReady] = useState(false);
+  const onDone = useCallback(() => {
+    setReady(true);
+    scene.ready = true;
+  }, []);
+
+  useEffect(() => startSmoothScroll(), []);
+
+  useEffect(() => {
+    if (!ready) return undefined;
+    const stop = watchScenes();
+    const refresh = () => ScrollTrigger.refresh();
+    document.fonts?.ready.then(refresh);
+    return stop;
+  }, [ready]);
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white selection:bg-cyan-500/30">
-      <Navigation />
-      <HeroSection />
-      <AboutSection />
-      <WorkSection />
-      <AgentsSection />
-      <ExperienceSection />
-      <CertificationsSection />
-      <ContactSection />
+    <div className="min-h-screen text-white selection:bg-cyan-500/30">
+      <Preloader onDone={onDone} />
+      <Suspense fallback={null}>
+        <Particles />
+      </Suspense>
+      <div className="vignette" aria-hidden="true" />
+      <div className="grain" aria-hidden="true" />
+      <ScrollProgress />
+      <Cursor />
+      {ready && (
+        <div className="relative z-[3] overflow-x-clip">
+          <Navigation />
+          <HeroSection />
+          <AboutSection />
+          <Banner />
+          <WorkSection />
+          <AgentsSection />
+          <ExperienceSection />
+          <CertificationsSection />
+          <ContactSection />
+        </div>
+      )}
     </div>
   );
 }

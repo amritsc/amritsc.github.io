@@ -1,35 +1,23 @@
-# Amrit Chauhan Portfolio
+# amritsc.github.io
 
-Personal portfolio website built with React, Vite, Tailwind CSS, and Framer Motion.
+Personal site for Amrit Chauhan, built with React, Vite, Tailwind CSS, Framer Motion and Three.js, and deployed to GitHub Pages on every push to `main`.
 
+## Where things live
 
----
+- `src/App.jsx`: every section and its content (about, projects, agents, experience, certifications, contact)
+- `src/components/logos.jsx`: company logos used in Experience and the banner
+- `src/components/Banner.jsx`: the scrolling logo, focus-area and tool rows
+- `src/components/Particles.jsx`: the WebGL particle background that changes shape per section
+- `src/components/Trace.jsx` and `src/data.js`: the simulated orchestrator run
+- `src/components/LiveRepos.jsx`: any public repo tagged with the `portfolio` topic shows up under Projects automatically
 
-## 📁 Project Structure
+## Performance
+
+Phones and low-power devices get fewer particles, a lower render resolution, 30fps rendering and no live blur. The background also measures real frame times and steps its quality down further if a device struggles.
+
+## Run locally
+
+```bash
+npm ci
+npm run dev
 ```
-portfolio-project/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml      # Auto-deployment config
-├── public/
-│   └── favicon.svg         # Browser tab icon
-├── src/
-│   ├── App.jsx             # Main portfolio component
-│   ├── index.css           # Tailwind styles
-│   └── main.jsx            # React entry point
-├── .gitignore
-├── index.html
-├── package.json
-├── postcss.config.js
-├── tailwind.config.js
-├── vite.config.js
-└── README.md
-```
-
-## 🛠 Tech Stack
-- React 18
-- Vite 5
-- Tailwind CSS 3
-- Framer Motion 11
-
-
