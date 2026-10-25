@@ -668,7 +668,7 @@ const CertificationsSection = () => {
         { name: "Microsoft Certified: Azure AI Fundamentals", code: "AI-900", status: "completed" },
         { name: "Microsoft Certified: Azure Data Fundamentals", code: "DP-900", status: "completed" },
         { name: "Microsoft Certified: Azure AI Engineer Associate", code: "AI-102", status: "completed" },
-        { name: "Microsoft 365 Certified: Copilot and Agent Administration Fundamentals", code: "AB-900", status: "upcoming" },
+        { name: "Microsoft 365 Certified: Copilot and Agent Administration Fundamentals", code: "AB-900", status: "completed" },
         { name: "Microsoft Certified: Azure Solutions Architect Expert", code: "AZ-305", status: "completed" },
       ],
     },
