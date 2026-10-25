@@ -10,8 +10,11 @@ export const scene = { target: 0, ready: false, velocity: 0, lenis: null };
 export const prefersReduced = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+export const isCoarse = () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
 export function startSmoothScroll() {
-  if (prefersReduced()) return () => {};
+  // Phones keep native scrolling: it is already smooth and costs nothing.
+  if (prefersReduced() || isCoarse()) return () => {};
   const lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.95 });
   scene.lenis = lenis;
   lenis.on('scroll', (e) => {
@@ -41,13 +44,17 @@ export function startSmoothScroll() {
   };
 }
 
-// Sections tagged data-scene="n" drive which shape the particle field morphs into.
+// Which particle shape each section morphs the background into.
+const SCENES = { hero: 0, about: 1, banner: 1, projects: 1, agents: 2, experience: 3, certifications: 3, contact: 4 };
+
 export function watchScenes() {
-  const els = [...document.querySelectorAll('[data-scene]')];
+  const els = Object.keys(SCENES)
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((en) => {
-        if (en.isIntersecting) scene.target = Number(en.target.dataset.scene);
+        if (en.isIntersecting) scene.target = SCENES[en.target.id];
       });
     },
     { rootMargin: '-48% 0px -48% 0px' },

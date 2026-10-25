@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { MotionConfig } from 'framer-motion';
-import '@fontsource-variable/bricolage-grotesque/standard.css';
-import '@fontsource-variable/instrument-sans/standard.css';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
 import 'lenis/dist/lenis.css';
 import App from './App.jsx';
 import './index.css';

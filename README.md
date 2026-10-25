@@ -1,13 +1,19 @@
 # amritsc.github.io
 
-Personal site for Amrit Chauhan, built with React, Vite, Three.js, GSAP and Framer Motion and deployed to GitHub Pages on every push to `main`.
+Personal site for Amrit Chauhan, built with React, Vite, Tailwind CSS, Framer Motion and Three.js, and deployed to GitHub Pages on every push to `main`.
 
-## Editing content
+## Where things live
 
-All copy lives in `src/data.js`: experience, certifications, agents, the hero trace and the banner. Layout code doesn't need to change for content updates.
+- `src/App.jsx`: every section and its content (about, projects, agents, experience, certifications, contact)
+- `src/components/logos.jsx`: company logos used in Experience and the banner
+- `src/components/Banner.jsx`: the scrolling logo, focus-area and tool rows
+- `src/components/Particles.jsx`: the WebGL particle background that changes shape per section
+- `src/components/Trace.jsx` and `src/data.js`: the simulated orchestrator run
+- `src/components/LiveRepos.jsx`: any public repo tagged with the `portfolio` topic shows up under Projects automatically
 
-- **Banner logos:** add an SVG to `public/logos/` and set `logo: '/logos/<file>.svg'` on the matching entry in `places`. Entries without a logo render as typeset names.
-- **Open builds:** any public repo tagged with the `portfolio` topic on GitHub appears in the Builds section automatically.
+## Performance
+
+Phones and low-power devices get fewer particles, a lower render resolution, 30fps rendering and no live blur. The background also measures real frame times and steps its quality down further if a device struggles.
 
 ## Run locally
 
@@ -15,7 +21,3 @@ All copy lives in `src/data.js`: experience, certifications, agents, the hero tr
 npm ci
 npm run dev
 ```
-
-## Stack
-
-React 18, Vite 5, Three.js (custom particle shader), GSAP ScrollTrigger, Lenis smooth scroll, Framer Motion 11, Bricolage Grotesque and Instrument Sans (Fontsource), Simple Icons.

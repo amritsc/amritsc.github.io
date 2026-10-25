@@ -8,11 +8,11 @@ const STAGE = ['#ff6b6b', '#f7b955', '#4fd8c4', '#5ea8ff', '#b18cff', '#5bdb86']
 
 // Per-scene layout: [x, y, scale, opacity, tiltX, spin]
 const LAYOUT = [
-  [1.6, 0.1, 1.05, 1, 0.25, 1], // 0 hero: galaxy sphere
+  [0, 0, 1.15, 0.62, 0.25, 1], // 0 hero: galaxy sphere behind the centered name
   [0, -1.5, 1, 0.55, -0.55, 0], // 1 story: wave field
   [0, 0.15, 0.82, 0.7, 0, 0], // 2 agents: pipeline network
   [2.4, 0, 1, 0.42, 0.15, 1], // 3 record: double helix
-  [0, 0, 0.95, 0.85, 0.35, 1], // 4 contact: torus knot
+  [0, 0, 0.95, 0.55, 0.35, 1], // 4 contact: torus knot
 ];
 
 const gauss = () => {
@@ -239,7 +239,9 @@ export default function Particles() {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const fine = window.matchMedia('(pointer: fine)').matches;
     const small = window.innerWidth < 768;
-    const N = small ? 11000 : 30000;
+    // Phones, touch devices and low-core machines get a lighter field from the start.
+    const lowPower = !fine || small || (navigator.hardwareConcurrency || 8) <= 4;
+    const N = lowPower ? 6000 : 26000;
 
     let renderer;
     try {
@@ -247,9 +249,9 @@ export default function Particles() {
     } catch {
       return undefined;
     }
-    const pr = Math.min(window.devicePixelRatio || 1, 1.75);
+    let pr = Math.min(window.devicePixelRatio || 1, lowPower ? 1.25 : 1.75);
     renderer.setPixelRatio(pr);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
     el.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -271,7 +273,7 @@ export default function Particles() {
     const uniforms = {
       uTime: { value: 0 },
       uP: { value: 0 },
-      uSize: { value: small ? 5.2 : 4.6 },
+      uSize: { value: lowPower ? 6 : 4.6 },
       uPR: { value: pr },
       uAspect: { value: window.innerWidth / window.innerHeight },
       uMouse: { value: new THREE.Vector2(9, 9) },
@@ -305,10 +307,16 @@ export default function Particles() {
       document.addEventListener('pointerleave', onLeave);
     }
 
+    let lastW = window.innerWidth;
+    let lastH = window.innerHeight;
     const onResize = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      renderer.setSize(w, h);
+      // Mobile browsers fire resize as the URL bar slides; ignore those small height-only changes.
+      if (w === lastW && Math.abs(h - lastH) < 160) return;
+      lastW = w;
+      lastH = h;
+      renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       uniforms.uAspect.value = w / h;
@@ -320,11 +328,50 @@ export default function Particles() {
     let raf;
     let spin = 0;
     const cur = { x: 0, y: 0, s: 1, o: 0, tilt: 0 };
-    const lerp = (a, b, t) => a + (b - a) * t;
+    let frameScale = 1;
+    // Frame-rate independent easing: same feel at 30fps and 120fps.
+    const lerp = (a, b, k) => a + (b - a) * (1 - Math.pow(1 - k, frameScale));
+
+    // Adaptive quality: watch real frame times and step down if the device struggles.
+    const budget = lowPower ? 1000 / 30 : 1000 / 60;
+    let level = 0;
+    let samples = 0;
+    let sampleSum = 0;
+    let lastRender = 0;
+    const degrade = () => {
+      level += 1;
+      if (level === 1) {
+        geo.setDrawRange(0, Math.floor(N * 0.55));
+        pr = 1;
+        renderer.setPixelRatio(pr);
+        uniforms.uPR.value = pr;
+        renderer.setSize(window.innerWidth, window.innerHeight, false);
+      } else if (level === 2) {
+        geo.setDrawRange(0, Math.floor(N * 0.3));
+      }
+    };
 
     const tick = () => {
+      raf = requestAnimationFrame(tick);
       const nowT = performance.now();
-      const dt = Math.min((nowT - lastT) / 1000, 0.05);
+      // Phones render at 30fps; level 3 (very slow device) drops to ~8fps, which reads as a slow drift.
+      const minGap = level >= 3 ? 120 : lowPower ? 31 : 0;
+      if (nowT - lastRender < minGap) return;
+      const gap = lastRender ? nowT - lastRender : budget;
+      lastRender = nowT;
+      window.__field = { level, count: geo.drawRange.count === Infinity ? N : geo.drawRange.count, lowPower };
+      if (scene && level < 3 && nowT - t0 > 2500) {
+        sampleSum += gap;
+        samples += 1;
+        if (samples >= 45) {
+          if (sampleSum / samples > budget * 1.6) degrade();
+          if (level >= 2 && sampleSum / samples > budget * 2.5) level = 3;
+          samples = 0;
+          sampleSum = 0;
+        }
+      }
+      const dt = Math.min((nowT - lastT) / 1000, 0.1);
+      frameScale = Math.min(dt * 60, 6);
       lastT = nowT;
       const t = (nowT - t0) / 1000;
       if (!reduce) uniforms.uTime.value = t;
@@ -339,7 +386,9 @@ export default function Particles() {
       cur.x = lerp(cur.x, narrow ? 0 : L[0], 0.04);
       cur.y = lerp(cur.y, L[1], 0.04);
       cur.s = lerp(cur.s, L[2] * fit, 0.04);
-      cur.o = lerp(cur.o, sceneState.ready ? L[3] : 0, 0.03);
+      // On narrow screens text sits on top of the shapes, so dim them outside the hero.
+      const textDim = narrow && idx > 0 ? 0.5 : 1;
+      cur.o = lerp(cur.o, sceneState.ready ? L[3] * textDim : 0, 0.03);
       cur.tilt = lerp(cur.tilt, L[4], 0.04);
 
       group.position.set(cur.x, cur.y, 0);
@@ -362,7 +411,6 @@ export default function Particles() {
       uniforms.uMouseF.value = lerp(uniforms.uMouseF.value, fine && !reduce ? mouse.active : 0, 0.06);
 
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
