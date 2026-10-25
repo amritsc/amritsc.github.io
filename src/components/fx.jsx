@@ -9,6 +9,8 @@ export function Preloader({ onDone }) {
   const [gone, setGone] = useState(false);
 
   useEffect(() => {
+    // The static copy in index.html covers first paint; this one takes over seamlessly.
+    document.getElementById('boot-loader')?.remove();
     if (reduce) {
       onDone();
       setGone(true);
